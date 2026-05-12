@@ -1,0 +1,314 @@
+{
+  "name": "Daily Report — Send & Preview",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "daily-report",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -304,
+        -112
+      ],
+      "id": "6edf7931-703f-47b0-94b2-c21454df4316",
+      "name": "Webhook",
+      "webhookId": "fe58fcb9-1319-4a61-b724-e3326518ae01"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "5525dd14-29fe-43a8-a5bb-29f2740552b1",
+              "leftValue": "={{ $json.query.mode }}",
+              "rightValue": "preview",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -144,
+        -112
+      ],
+      "id": "5114debb-32f3-443c-b625-2ae69f01e80c",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "19rQx7vVjIN5kVjwVRAebA18yKCaAJXyrcAgFsb6VOGM",
+          "mode": "list",
+          "cachedResultName": "Daily Job Report",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19rQx7vVjIN5kVjwVRAebA18yKCaAJXyrcAgFsb6VOGM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19rQx7vVjIN5kVjwVRAebA18yKCaAJXyrcAgFsb6VOGM/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        16,
+        -192
+      ],
+      "id": "cf3c53b5-4140-4b78-8ff5-2926af53cee6",
+      "name": "Sheets - Preview",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gXXM88miu1gqojC5",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "19rQx7vVjIN5kVjwVRAebA18yKCaAJXyrcAgFsb6VOGM",
+          "mode": "list",
+          "cachedResultName": "Daily Job Report",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19rQx7vVjIN5kVjwVRAebA18yKCaAJXyrcAgFsb6VOGM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19rQx7vVjIN5kVjwVRAebA18yKCaAJXyrcAgFsb6VOGM/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        16,
+        -16
+      ],
+      "id": "3f412945-d6d4-41ae-9a70-d846b9873c15",
+      "name": "Sheets - Send",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gXXM88miu1gqojC5",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all();\n\nconst formatDate = (dateStr) => {\n  if (!dateStr) return '—';\n  const d = new Date(dateStr);\n  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });\n};\n\nconst today = new Date();\nconst reportDate = today.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });\nconst subjectDate = today.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }).replace(/\\//g, '-');\n\nlet tableRows = '';\n\nrows.forEach((row, index) => {\n  const r = row.json;\n  const stepNo = r['Step No.'] || (index + 1);\n  const task = r['Task Description'] || '—';\n  const status = r['Status'] || '—';\n  const doneBy = r['Done By'] || '—';\n  const dateGiven = formatDate(r['Date Given']);\n  const targetDate = formatDate(r['Target Date']);\n  const remarks = r['Remarks'] || '—';\n  const duration = `${dateGiven} → ${targetDate}`;\n\n  tableRows += `\n    <tr>\n      <td style=\"padding:8px;border:1px solid #ddd;text-align:center;\">${stepNo}</td>\n      <td style=\"padding:8px;border:1px solid #ddd;\">${task}</td>\n      <td style=\"padding:8px;border:1px solid #ddd;\">${status}</td>\n      <td style=\"padding:8px;border:1px solid #ddd;\">${doneBy}</td>\n      <td style=\"padding:8px;border:1px solid #ddd;\">${duration}</td>\n      <td style=\"padding:8px;border:1px solid #ddd;\">${remarks}</td>\n    </tr>`;\n});\n\nconst html = `<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Daily Report — ${reportDate}</title>\n</head>\n<body style=\"font-family:Arial,sans-serif;font-size:14px;color:#000;padding:16px;margin:0;\">\n  <p>Dear GM,</p>\n  <p><strong>Daily Report — ${reportDate}</strong></p>\n  <div style=\"overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;\">\n    <table style=\"border-collapse:collapse;min-width:600px;width:100%;table-layout:fixed;word-wrap:break-word;\">\n      <thead>\n        <tr>\n          <th style=\"padding:8px;border:1px solid #ddd;border-bottom:2px solid #000;text-align:center;width:5%;\">#</th>\n          <th style=\"padding:8px;border:1px solid #ddd;border-bottom:2px solid #000;width:25%;\">Task Description</th>\n          <th style=\"padding:8px;border:1px solid #ddd;border-bottom:2px solid #000;width:12%;\">Status</th>\n          <th style=\"padding:8px;border:1px solid #ddd;border-bottom:2px solid #000;width:10%;\">Done By</th>\n          <th style=\"padding:8px;border:1px solid #ddd;border-bottom:2px solid #000;width:18%;\">Duration</th>\n          <th style=\"padding:8px;border:1px solid #ddd;border-bottom:2px solid #000;width:30%;\">Remarks</th>\n        </tr>\n      </thead>\n      <tbody>\n        ${tableRows}\n      </tbody>\n    </table>\n  </div>\n  <br>\n  <p>Regards,<br>Liane</p>\n</body>\n</html>`;\n\nreturn [{ json: { html, reportDate, subjectDate } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        -16
+      ],
+      "id": "29dc8f8e-463b-4db1-9058-8ba19926db46",
+      "name": "Code - Send"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all();\n\nconst formatDate = (dateStr) => {\n  if (!dateStr) return '—';\n  const d = new Date(dateStr);\n  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });\n};\n\nconst today = new Date();\nconst reportDate = today.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });\nconst subjectDate = today.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }).replace(/\\//g, '-');\n\nlet tableRows = '';\n\nrows.forEach((row, index) => {\n  const r = row.json;\n  const stepNo = r['Step No.'] || (index + 1);\n  const task = r['Task Description'] || '—';\n  const status = r['Status'] || '—';\n  const doneBy = r['Done By'] || '—';\n  const dateGiven = formatDate(r['Date Given']);\n  const targetDate = formatDate(r['Target Date']);\n  const remarks = r['Remarks'] || '—';\n  const duration = `${dateGiven} → ${targetDate}`;\n\n  tableRows += `\n    <tr>\n      <td style=\"padding:8px;border:1px solid #ddd;text-align:center;\">${stepNo}</td>\n      <td style=\"padding:8px;border:1px solid #ddd;\">${task}</td>\n      <td style=\"padding:8px;border:1px solid #ddd;\">${status}</td>\n      <td style=\"padding:8px;border:1px solid #ddd;\">${doneBy}</td>\n      <td style=\"padding:8px;border:1px solid #ddd;\">${duration}</td>\n      <td style=\"padding:8px;border:1px solid #ddd;\">${remarks}</td>\n    </tr>`;\n});\n\nconst html = `<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Daily Report — ${reportDate}</title>\n</head>\n<body style=\"font-family:Arial,sans-serif;font-size:14px;color:#000;padding:16px;margin:0;\">\n  <p>Dear GM,</p>\n  <p><strong>Daily Report — ${reportDate}</strong></p>\n  <div style=\"overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;\">\n    <table style=\"border-collapse:collapse;min-width:600px;width:100%;table-layout:fixed;word-wrap:break-word;\">\n      <thead>\n        <tr>\n          <th style=\"padding:8px;border:1px solid #ddd;border-bottom:2px solid #000;text-align:center;width:5%;\">#</th>\n          <th style=\"padding:8px;border:1px solid #ddd;border-bottom:2px solid #000;width:25%;\">Task Description</th>\n          <th style=\"padding:8px;border:1px solid #ddd;border-bottom:2px solid #000;width:12%;\">Status</th>\n          <th style=\"padding:8px;border:1px solid #ddd;border-bottom:2px solid #000;width:10%;\">Done By</th>\n          <th style=\"padding:8px;border:1px solid #ddd;border-bottom:2px solid #000;width:18%;\">Duration</th>\n          <th style=\"padding:8px;border:1px solid #ddd;border-bottom:2px solid #000;width:30%;\">Remarks</th>\n        </tr>\n      </thead>\n      <tbody>\n        ${tableRows}\n      </tbody>\n    </table>\n  </div>\n  <br>\n  <p>Regards,<br>Liane</p>\n</body>\n</html>`;\n\nreturn [{ json: { html, reportDate, subjectDate } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        -192
+      ],
+      "id": "f23d9cd9-6f77-4028-9388-8b0d70d0b024",
+      "name": "Code - Preview"
+    },
+    {
+      "parameters": {
+        "fromEmail": "liane.a@velath.com",
+        "toEmail": "Ops.UAE@velath.com",
+        "subject": "=[{{ $json.subjectDate }}] R&D - Daily Report",
+        "html": "={{ $json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        304,
+        -16
+      ],
+      "id": "4d1ecbb9-4acd-4ff7-b013-a432f95bc52d",
+      "name": "Send an Email",
+      "webhookId": "83750fe6-0d0b-41c9-9281-e36e39eddcf5",
+      "credentials": {
+        "smtp": {
+          "id": "nuA8MN9a6SsboFTi",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 17 * * 1-6"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -240,
+        32
+      ],
+      "id": "9a8e1e75-9078-4b8d-8df7-69a05f30e963",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.html }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        304,
+        -192
+      ],
+      "id": "3f4f7c34-7852-4ebe-ae33-ad6ca0e27c1c",
+      "name": "Email Preview"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Sheets - Preview",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sheets - Send",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheets - Preview": {
+      "main": [
+        [
+          {
+            "node": "Code - Preview",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheets - Send": {
+      "main": [
+        [
+          {
+            "node": "Code - Send",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Preview": {
+      "main": [
+        [
+          {
+            "node": "Email Preview",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Send": {
+      "main": [
+        [
+          {
+            "node": "Send an Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Sheets - Send",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "6b8a46cf-f33e-40c7-9ba5-bb9591897684",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b39cb1c60e7da48a80491b680b3fba60f93d367e62a4e77a0e2f1edeeae43171"
+  },
+  "id": "CYjuJkNI9KQ4LNI6",
+  "tags": []
+}
