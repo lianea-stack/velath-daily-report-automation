@@ -73,8 +73,7 @@ Add:
 
 - Google Sheets credentials
 - SMTP credentials
- 
-Guide on how to setup credentials can be found here: docs/credential-setup-guide.md
+ Guide on how to setup credentials can be found here: project_folder/docs/credential-setup-guide.md
 ---
 
 ### 7. Test Workflow
