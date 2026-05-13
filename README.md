@@ -1,6 +1,6 @@
 # Velath Daily Report Automation
 
-Automated daily reporting system built using :contentReference[oaicite:1]{index=1}, :contentReference[oaicite:2]{index=2}, and SMTP email.
+Automated daily reporting system built using google sheets, n8n, and SMTP email.
 
 ---
 
